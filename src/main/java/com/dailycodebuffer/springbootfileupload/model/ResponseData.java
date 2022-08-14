@@ -13,4 +13,5 @@ public class ResponseData {
     private String downLoadURL;
     private String fileType;
     private long fileSize;
+    private String thing;
 }
