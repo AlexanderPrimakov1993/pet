@@ -1,0 +1,328 @@
+openapi: 3.0.0
+
+info:
+  description: Customer Webapi Organization Management REST API
+  version: 1.0.21-1
+  title: Customer Webapi Organization Management REST API
+
+servers:
+  - url: /customer-webapi-1.0
+    description: localhost
+  - url: http://uidm.uidm-dev.d.exportcenter.ru/customer-webapi-1.0
+    description: DEV
+
+
+paths:
+
+  /orgs/v2/{orgId}/members:
+    get:
+      description: "Получение списка пользователей в организации."
+      tags:
+        - Org
+      parameters:
+        - $ref: "#/components/parameters/orgId"
+      responses:
+        "200":
+          description: Успешный ответ. Список пользователей в теле ответа
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PageableMembers"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+
+  /orgs/v2/{orgId}/members/{principalId}:
+    get:
+      description: "Получение информации о пользователе по идентификатору"
+      tags:
+        - Org
+      parameters:
+        - $ref: "#/components/parameters/orgId"
+        - $ref: "#/components/parameters/principalId"
+      responses:
+        "200":
+          description: Успешный ответ. Профиль пользователя в теле ответа
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PrincipalWithOrganizations"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+
+  /orgs/v2/{orgId}/members/{principalId}/block:
+    post:
+      description: "Блокировка пользователя"
+      tags:
+        - Org
+      parameters:
+        - $ref: "#/components/parameters/orgId"
+        - $ref: "#/components/parameters/principalId"
+      responses:
+        "204":
+          description: Успешный ответ.
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+    delete:
+      description: "Разблокировка пользователя"
+      tags:
+        - Org
+      parameters:
+        - $ref: "#/components/parameters/orgId"
+        - $ref: "#/components/parameters/principalId"
+      responses:
+        "204":
+          description: Успешный ответ.
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+
+  /orgs/v2/{orgId}/members/{principalId}/roles:
+    post:
+      description: "Назначение ролей пользователю"
+      tags:
+        - Org
+      parameters:
+        - $ref: "#/components/parameters/orgId"
+        - $ref: "#/components/parameters/principalId"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RoleNameList"
+      responses:
+        "204":
+          description: Успешный ответ.
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+    delete:
+      description: "Снятие ролей с пользователя"
+      tags:
+        - Org
+      parameters:
+        - $ref: "#/components/parameters/orgId"
+        - $ref: "#/components/parameters/principalId"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RoleNameList"
+      responses:
+        "204":
+          description: Успешный ответ.
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+
+security:
+  - bearerAuth: [ ]
+
+components:
+
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: Bearer sso_1.0_{{ access_token }}
+
+  responses:
+    NotFound:
+      description: Некорректный запрос. Данные не найдены
+    BadRequest:
+      description: Некорректный запрос. Краткое описание причины будет в теле ответа
+    Forbidden:
+      description: Доступ к данным запрещен
+
+
+  parameters:
+
+    principalId:
+      name: principalId
+      in: path
+      description: "Идентификатор пользователя в UIDM. Либо '@me', тогда будет использоваться значение principalId из токена."
+      required: true
+      schema:
+        type: string
+        example: "sso_____3273f1ad-1811-410f-8ac9-f459312f15f6"
+
+    orgId:
+      name: orgId
+      in: path
+      description: "Идентификатор организации в UIDM. Либо '@current', тогда будет использоваться значение currOrgId из токена."
+      required: true
+      schema:
+        type: string
+        example: "sso_____3273f1ad-1811-410f-8ac9-f459312f15f6"
+
+  schemas:
+    PageableMembers:
+      type: object
+      allOf:
+        - $ref: '#/components/schemas/Page'
+        - type: object
+          properties:
+            content:
+              type: array
+              items:
+                $ref: "#/components/schemas/PrincipalWithOrganizations"
+
+    Page:
+      type: object
+      properties:
+        totalPages:
+          type: integer
+        totalElements:
+          type: integer
+        numberOfElements:
+          type: integer
+        number:
+          type: integer
+        last:
+          type: boolean
+
+    PrincipalWithOrganizations:
+      allOf:
+        - $ref: "#/components/schemas/Principal"
+        - $ref: "#/components/schemas/PrincipalOrganizations"
+
+    Principal:
+      type: object
+      properties:
+        id:
+          type: string
+          description: "уникальный идентификатор пользователя"
+        fd:
+          type: string
+          format: date-time
+          description: "(опционально) дата регистрации профиля в формате ISO 8601"
+        person:
+          $ref: "#/components/schemas/Person"
+        blocks:
+          type: array
+          description: "(опционально) блокировки пользователя"
+          items:
+            $ref: "#/components/schemas/Block"
+        extendedAttributes:
+          type: object
+          description: "(опционально). Дополнительные атрибуты пользователя, могут передаваться произвольные атрибуты с общим объемом данных не более 2000 символов."
+          additionalProperties: true
+
+    Block:
+      type: object
+      properties:
+        id:
+          type: string
+          description: "(опционально) уникальный идентификатор блокировки"
+        blockedTo:
+          type: string
+          description: "(опционально) дата, время в формате ISO 8601 определяет срок окончания блокировки. Если передать дату пустой или null, то учетная запись будет заблокирована бессрочно до явной разблокировки"
+        blockedAction:
+          type: string
+          description: "Заблокированное действие (опционально, по-умолчанию - AUTHENTICATION)"
+          enum:
+            - "AUTHENTICATION"
+            - "CHANGE_CREDENTIAL"
+          default: "AUTHENTICATION"
+
+    Person:
+      description: "описание физ.лица/пользователя, персональные данные"
+      properties:
+        firstNameNat:
+          type: string
+          description: " (опционально) имя пользователя, строковое значение, максимальная длина 255 символов"
+        lastNameNat:
+          type: string
+          description: "(опционально) фамилия пользователя, строковое значение, максимальная длина 255 символов"
+        patronymicNameNat:
+          type: string
+          description: "(опционально) отчество пользователя, строковое значение, максимальная длина 255 символов"
+        displayNameNat:
+          type: string
+          description: "(опционально) ФИО пользователя одной строкой, максимальная длина 255 символов"
+        contacts:
+          type: array
+          description: "(опционально) структура и массив для задания контактных данных пользователя"
+          items:
+            $ref: "#/components/schemas/PrincipalContact"
+
+    PrincipalContact:
+      required:
+        - contactType
+        - address
+      properties:
+        contactType:
+          type: string
+          description: "(обязательно) тип контакта"
+          enum:
+            - "phone"
+            - "email"
+        address:
+          type: string
+          description: "(обязательно). Значение адреса (email или номер телефона), в зависимости от contactType, строка не более 1000 символов"
+        verificationStatus:
+          type: string
+          description: >
+            (опционально) статус верификации контакта
+              * `VERIFIED` - Контакт проверен
+              * `NOT_VERIFIED` - Контакт не проверен
+              * `UNDEFINED` - Статус верификации не установлен
+          enum:
+            - "VERIFIED"
+            - "NOT_VERIFIED"
+            - "UNDEFINED"
+          default: "UNDEFINED"
+
+    PrincipalOrganizations:
+      type: object
+      properties:
+        organizations:
+          type: array
+          description: "(опционально) список организаций, в которых состоит пользователь"
+          items:
+            $ref: "#/components/schemas/PrincipalOrganization"
+
+    PrincipalOrganization:
+      type: object
+      properties:
+        id:
+          type: string
+          description: "(обязательно) уникальный идентификатор организации"
+        displayName:
+          type: string
+          description: "Название организации"
+        extendedAttributes:
+          type: object
+          description: "(опционально). Дополнительные атрибуты организации, могут передаваться произвольные атрибуты с общим объемом данных не более 2000 символов."
+          additionalProperties: true
+        roles:
+          type: array
+          description: "(опционально) роли пользователя в данной организации"
+          items:
+            $ref: "#/components/schemas/OrgRole"
+
+
+    OrgRole:
+      type: object
+      properties:
+        id:
+          type: string
+          description: "(обязательно) уникальный идентификатор роли"
+        name:
+          type: string
+          description: "Название роли"
+
+    RoleNameList:
+      type: array
+      items:
+        type: string
