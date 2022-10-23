@@ -21,21 +21,6 @@ public class AttachmentController {
         this.attachmentService = attachmentService;
     }
 
-    @PostMapping("/upload")
-    public ResponseData uploadFile(@RequestParam("file")MultipartFile file) throws Exception {
-        Attachment attachment =null;
-        String downloadURL ="";
-        attachment =attachmentService.saveAttachment(file);
-        downloadURL= ServletUriComponentsBuilder.fromCurrentContextPath()
-                .path("/download/")
-                .path(attachment.getId())
-                .toUriString();
-
-        return new ResponseData(attachment.getFileName(),
-                downloadURL, file.getContentType(),
-                file.getSize());
-    }
-
     @GetMapping("/download/{fileId}")
     public ResponseEntity<Resource> downloadFile(@PathVariable String fileId) throws Exception {
          Attachment attachment =null;
