@@ -7,4 +7,6 @@ public class Model {
     private String myOwn;
     private String forStash;
     private int d;
+    private int dsdf;
+    private int dsdfsdv;
 }
