@@ -17,6 +17,7 @@ public class Attachment {
     @Id
     @GenericGenerator(name = "uuid", strategy="uuid2")
     private String id;
+    private String fucking_sheet;
 
     private String fileName;
     private String fileType;
