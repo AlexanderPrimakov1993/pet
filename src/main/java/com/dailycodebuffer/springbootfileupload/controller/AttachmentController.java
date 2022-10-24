@@ -16,6 +16,7 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 public class AttachmentController {
 
     private AttachmentService attachmentService;
+    private AttachmentService ascascattachmentService;
 
     public AttachmentController(AttachmentService attachmentService) {
         this.attachmentService = attachmentService;
