@@ -10,4 +10,5 @@ public class Model {
     private int dsdf;
     private int dsdfsdv;
     private int vsdvdsdsdfsdv;
+    private String patch;
 }
