@@ -5,4 +5,6 @@ public class Model {
     private int x =4;
     private String str;
     private String myOwn;
+    private String forStash;
+    private int d;
 }
