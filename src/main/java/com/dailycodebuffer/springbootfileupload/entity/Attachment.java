@@ -21,6 +21,7 @@ public class Attachment {
     private String fileName;
     private String fileType;
     private int digit;
+    private String fileTypewefwe;
 
     @Lob
     private byte[] data;
